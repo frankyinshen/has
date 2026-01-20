@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Evan's Grammar Adventure</title>
+    <title>Evan's Grammar Adventure (Full Version)</title>
     <style>
         :root {
             --primary: #4A90E2;
@@ -36,7 +36,7 @@
             border: 5px solid var(--primary);
         }
 
-        h1 { color: var(--primary); margin-bottom: 10px; }
+        h1 { color: var(--primary); margin-bottom: 10px; font-size: 1.8rem; }
         h2 { color: #555; font-size: 1.2rem; }
         
         .rule-box {
@@ -133,6 +133,13 @@
         .hidden { display: none; }
         
         .mascot { font-size: 3rem; margin-bottom: 10px; display: block; }
+        
+        .score-badge {
+            background: #FFF3E0; color: #E65100;
+            padding: 5px 15px; border-radius: 20px;
+            font-weight: bold; font-size: 0.9rem;
+            display: inline-block; margin-top: 5px;
+        }
     </style>
 </head>
 <body>
@@ -141,9 +148,9 @@
     <!-- 欢迎页面 -->
     <div id="welcome-screen">
         <span class="mascot">🦁</span>
-        <h1>Hi, Evan! Ready to Play?</h1>
-        <p>我们将通过三个关卡来成为 "Have" 之王！</p>
-        <p>你必须通过第一关，才能解锁下一关哦。</p>
+        <h1>Hi, Evan! Ready for the Challenge?</h1>
+        <p>题库已升级到 100+ 道题目！</p>
+        <p>每次闯关，我会随机挑出几道题考考你。</p>
         <button class="btn" onclick="startLevel(1)">Start Level 1</button>
     </div>
 
@@ -173,7 +180,7 @@
         <h1 id="result-title">Level Complete!</h1>
         <p id="result-message">Good job, Evan!</p>
         <button class="btn" id="next-level-btn" onclick="nextStage()">Next Level ➡️</button>
-        <button class="btn" id="retry-btn" onclick="retryLevel()">Try Again 🔄</button>
+        <button class="btn" id="retry-btn" onclick="retryLevel()">Try Again (New Questions) 🔄</button>
     </div>
 </div>
 
@@ -187,25 +194,144 @@
 </div>
 
 <script>
-    // 题目数据库
-    const gameData = {
+    // --- 海量题库数据 (100+ Questions) ---
+    const allQuestionsData = {
+        level1: [
+            // Have (I, You, We, They, Plural)
+            { q: "I ______ a red bicycle.", options: ["have", "has", "had"], a: "have" },
+            { q: "You ______ a beautiful smile.", options: ["have", "has", "had"], a: "have" },
+            { q: "We ______ many toys.", options: ["have", "has", "had"], a: "have" },
+            { q: "They ______ a big house.", options: ["have", "has", "had"], a: "have" },
+            { q: "The cats ______ long tails.", options: ["have", "has", "had"], a: "have" },
+            { q: "Tom and Jerry ______ a plan.", options: ["have", "has", "had"], a: "have" },
+            { q: "My friends ______ a secret.", options: ["have", "has", "had"], a: "have" },
+            { q: "I ______ two brothers.", options: ["have", "has", "had"], a: "have" },
+            { q: "Do you ______ a minute?", options: ["have", "has", "had"], a: "have" },
+            { q: "Cars ______ four wheels.", options: ["have", "has", "had"], a: "have" },
+            { q: "You and I ______ homework to do.", options: ["have", "has", "had"], a: "have" },
+            { q: "Birds ______ wings.", options: ["have", "has", "had"], a: "have" },
+            { q: "We ______ a meeting today.", options: ["have", "has", "had"], a: "have" },
+            { q: "They ______ new shoes.", options: ["have", "has", "had"], a: "have" },
+            { q: "I ______ a headache.", options: ["have", "has", "had"], a: "have" },
+
+            // Has (He, She, It, Singular)
+            { q: "She ______ a cute puppy.", options: ["have", "has", "had"], a: "has" },
+            { q: "He ______ a blue pen.", options: ["have", "has", "had"], a: "has" },
+            { q: "It ______ a long neck.", options: ["have", "has", "had"], a: "has" },
+            { q: "Tom ______ a fast car.", options: ["have", "has", "had"], a: "has" },
+            { q: "My mom ______ nice hair.", options: ["have", "has", "had"], a: "has" },
+            { q: "The dog ______ a bone.", options: ["have", "has", "had"], a: "has" },
+            { q: "Evan ______ a cool iPad.", options: ["have", "has", "had"], a: "has" },
+            { q: "The house ______ big windows.", options: ["have", "has", "had"], a: "has" },
+            { q: "Everyone ______ a name.", options: ["have", "has", "had"], a: "has" },
+            { q: "My sister ______ a pink dress.", options: ["have", "has", "had"], a: "has" },
+            { q: "The elephant ______ a long nose.", options: ["have", "has", "had"], a: "has" },
+            { q: "My dad ______ a job.", options: ["have", "has", "had"], a: "has" },
+            { q: "The sun ______ a bright light.", options: ["have", "has", "had"], a: "has" },
+            { q: "This book ______ many pages.", options: ["have", "has", "had"], a: "has" },
+            { q: "Nobody ______ the answer.", options: ["have", "has", "had"], a: "has" },
+
+            // Had (Past Tense - Yesterday, Last...)
+            { q: "Yesterday, I ______ an apple.", options: ["have", "has", "had"], a: "had" },
+            { q: "Last year, she ______ short hair.", options: ["have", "has", "had"], a: "had" },
+            { q: "We ______ a party last night.", options: ["have", "has", "had"], a: "had" },
+            { q: "They ______ fun at the park yesterday.", options: ["have", "has", "had"], a: "had" },
+            { q: "My dog ______ a bath last week.", options: ["have", "has", "had"], a: "had" },
+            { q: "I ______ a bad dream last night.", options: ["have", "has", "had"], a: "had" },
+            { q: "He ______ a cold yesterday.", options: ["have", "has", "had"], a: "had" },
+            { q: "We ______ pizza for dinner yesterday.", options: ["have", "has", "had"], a: "had" },
+            { q: "Long ago, dinosaurs ______ big teeth.", options: ["have", "has", "had"], a: "had" },
+            { q: "She ______ a test last Friday.", options: ["have", "has", "had"], a: "had" },
+            { q: "You ______ a chance yesterday.", options: ["have", "has", "had"], a: "had" },
+            { q: "The cat ______ a mouse in its mouth just now.", options: ["have", "has", "had"], a: "had" },
+            { q: "My grandpa ______ a farm.", options: ["have", "has", "had"], a: "had" },
+            { q: "Last month, we ______ a holiday.", options: ["have", "has", "had"], a: "had" },
+            { q: "Yesterday morning, I ______ milk.", options: ["have", "has", "had"], a: "had" }
+        ],
+        level2: [
+            // Negatives (Don't/Doesn't/Didn't + HAVE)
+            { q: "He doesn't ______ a car.", options: ["have", "has", "had"], a: "have" },
+            { q: "She doesn't ______ any money.", options: ["have", "has", "had"], a: "have" },
+            { q: "I don't ______ a clue.", options: ["have", "has", "had"], a: "have" },
+            { q: "We didn't ______ time yesterday.", options: ["have", "has", "had"], a: "have" },
+            { q: "They don't ______ a dog.", options: ["have", "has", "had"], a: "have" },
+            { q: "The cat doesn't ______ wings.", options: ["have", "has", "had"], a: "have" },
+            { q: "My mom didn't ______ lunch.", options: ["have", "has", "had"], a: "have" },
+            { q: "Tom doesn't ______ a bike.", options: ["have", "has", "had"], a: "have" },
+            { q: "You didn't ______ to do that.", options: ["have", "has", "had"], a: "have" },
+            { q: "It doesn't ______ make sense.", options: ["have", "has", "had"], a: "have" },
+            { q: "Evan doesn't ______ school today.", options: ["have", "has", "had"], a: "have" },
+            { q: "My phone doesn't ______ battery.", options: ["have", "has", "had"], a: "have" },
+            { q: "We didn't ______ fun.", options: ["have", "has", "had"], a: "have" },
+            { q: "He didn't ______ his homework.", options: ["have", "has", "had"], a: "have" },
+            { q: "She doesn't ______ glasses.", options: ["have", "has", "had"], a: "have" },
+
+            // Questions (Do/Does/Did + HAVE)
+            { q: "Does she ______ a brother?", options: ["have", "has", "had"], a: "have" },
+            { q: "Do you ______ a pen?", options: ["have", "has", "had"], a: "have" },
+            { q: "Did they ______ a good trip?", options: ["have", "has", "had"], a: "have" },
+            { q: "Does he ______ the key?", options: ["have", "has", "had"], a: "have" },
+            { q: "Did Evan ______ breakfast?", options: ["have", "has", "had"], a: "have" },
+            { q: "Does the dog ______ food?", options: ["have", "has", "had"], a: "have" },
+            { q: "Do we ______ homework?", options: ["have", "has", "had"], a: "have" },
+            { q: "Did you ______ a nightmare?", options: ["have", "has", "had"], a: "have" },
+            { q: "Does your dad ______ a car?", options: ["have", "has", "had"], a: "have" },
+            { q: "Did she ______ a haircut?", options: ["have", "has", "had"], a: "have" },
+            { q: "Do cats ______ nine lives?", options: ["have", "has", "had"], a: "have" },
+            { q: "Does it ______ to be this hard?", options: ["have", "has", "had"], a: "have" },
+            { q: "Did Tom ______ a party?", options: ["have", "has", "had"], a: "have" },
+            { q: "Do they ______ a swimming pool?", options: ["have", "has", "had"], a: "have" },
+            { q: "Does Mary ______ a sister?", options: ["have", "has", "had"], a: "have" },
+            
+            // Tricky mixes
+            { q: "Why does he ______ so many toys?", options: ["have", "has", "had"], a: "have" },
+            { q: "When did you ______ lunch?", options: ["have", "has", "had"], a: "have" },
+            { q: "Where does she ______ her lessons?", options: ["have", "has", "had"], a: "have" },
+            { q: "Does Evan ______ a question?", options: ["have", "has", "had"], a: "have" }
+        ],
+        level3: [
+            // Having (Continuous - Now/At the moment)
+            { q: "Look! He is ______ lunch.", options: ["have", "has", "having"], a: "having" },
+            { q: "We are ______ a great time now.", options: ["have", "has", "having"], a: "having" },
+            { q: "They are ______ a meeting right now.", options: ["have", "has", "having"], a: "having" },
+            { q: "I am ______ difficulty with this.", options: ["have", "has", "having"], a: "having" },
+            { q: "She is ______ breakfast.", options: ["have", "has", "having"], a: "having" },
+            { q: "Are you ______ fun?", options: ["have", "has", "having"], a: "having" },
+            { q: "The dog is ______ a bath now.", options: ["have", "has", "having"], a: "having" },
+            { q: "Mom is ______ a cup of tea.", options: ["have", "has", "having"], a: "having" },
+            { q: "We are ______ a party!", options: ["have", "has", "having"], a: "having" },
+            { q: "He is ______ a shower.", options: ["have", "has", "having"], a: "having" },
+
+            // Ultimate Mix (Review of all rules)
+            { q: "Last year, I ______ a small bike.", options: ["have", "has", "had"], a: "had" },
+            { q: "He usually ______ toast for breakfast.", options: ["have", "has", "having"], a: "has" },
+            { q: "Does she ______ a cold?", options: ["have", "has", "had"], a: "have" },
+            { q: "Look! They are ______ dinner.", options: ["have", "has", "having"], a: "having" },
+            { q: "I didn't ______ my wallet.", options: ["have", "has", "had"], a: "have" },
+            { q: "Yesterday, we ______ no school.", options: ["have", "has", "had"], a: "had" },
+            { q: "My cat ______ green eyes.", options: ["have", "has", "having"], a: "has" },
+            { q: "Do you ______ a map?", options: ["have", "has", "had"], a: "have" },
+            { q: "She is ______ a baby.", options: ["have", "has", "having"], a: "having" },
+            { q: "Tom doesn't ______ any siblings.", options: ["have", "has", "had"], a: "have" },
+            { q: "Did you ______ enough sleep?", options: ["have", "has", "had"], a: "have" },
+            { q: "Right now, I am ______ a break.", options: ["have", "has", "having"], a: "having" },
+            { q: "They ______ a new teacher last year.", options: ["have", "has", "had"], a: "had" },
+            { q: "Does the sun ______ a face?", options: ["have", "has", "had"], a: "have" },
+            { q: "I ______ many books at home.", options: ["have", "has", "having"], a: "have" }
+        ]
+    };
+
+    const levelRules = {
         level1: {
             title: "Level 1: 现在的我和他，还有过去",
             rule: `
                 <strong>1. 现在的 "Have" vs "Has"</strong><br>
-                👉 <strong>Have:</strong> 我(I)、你(You)、大家(We/They/Cats)。<br>
-                👉 <strong>Has:</strong> 他(He)、她(She)、它(It)、汤姆(Tom)。<br>
+                👉 <strong>Have:</strong> 我(I)、你(You)、大家(We/They/复数)。<br>
+                👉 <strong>Has:</strong> 他(He)、她(She)、它(It)、单个名字(Tom)。<br>
                 <em>口诀：Has 有个 "s"，送给孤单的 "Single" (单个人)。</em><br><br>
                 <strong>2. 过去的 "Had"</strong><br>
                 👉 只要是过去的事情 (Yesterday, Last year)，大家都用 <strong>Had</strong>！
-            `,
-            questions: [
-                { q: "I ______ a red bicycle.", options: ["have", "has", "had"], a: "have", type: "rule1" },
-                { q: "She ______ a cute puppy.", options: ["have", "has", "had"], a: "has", type: "rule1" },
-                { q: "Tom and Jerry ______ a big house.", options: ["have", "has", "had"], a: "have", type: "rule1" },
-                { q: "Yesterday, we ______ pizza for lunch.", options: ["have", "has", "had"], a: "had", type: "rule2" },
-                { q: "My cat ______ a long tail.", options: ["have", "has", "had"], a: "has", type: "rule1" }
-            ]
+            `
         },
         level2: {
             title: "Level 2: 魔法照妖镜 (Do/Does/Did)",
@@ -216,31 +342,17 @@
                 <span class="highlight">Don't / Doesn't / Didn't</span><br><br>
                 后面的动词必须被打回原形 👉 <strong>HAVE</strong>。<br>
                 <em>不管前面是 He 还是 She，也不管是不是昨天！</em>
-            `,
-            questions: [
-                { q: "He doesn't ______ a car.", options: ["have", "has", "had"], a: "have", exp: "看到 doesn't 了吗？Has 必须变回原形 Have！" },
-                { q: "Did you ______ fun at the park?", options: ["have", "has", "had"], a: "have", exp: "Did 出现了！Had 必须变回原形 Have！" },
-                { q: "Does she ______ a brother?", options: ["have", "has", "had"], a: "have", exp: "Does 是照妖镜，She 后面的 Has 要变回 Have！" },
-                { q: "I didn't ______ breakfast this morning.", options: ["have", "has", "had"], a: "have", exp: "Didn't 出现了，必须用原形 Have。" },
-                { q: "Do they ______ a computer?", options: ["have", "has", "had"], a: "have", exp: "Do 后面跟原形 Have。" }
-            ]
+            `
         },
         level3: {
             title: "Level 3: 正在进行 & 终极大挑战",
             rule: `
                 <strong>1. 正在做 (Having)</strong><br>
-                如果是 "正在吃" 或 "正在玩"，用 <span class="magic">Having</span>。<br>
+                如果是 "正在吃" 或 "正在玩" (Now/Right now)，用 <span class="magic">Having</span>。<br>
                 <em>注意：Have 去掉 e 再加 ing！</em><br><br>
                 <strong>2. 混合大挑战</strong><br>
                 这一关包含了之前学过的所有陷阱哦！小心 Do/Does/Did！
-            `,
-            questions: [
-                { q: "Look! They are ______ lunch now.", options: ["have", "has", "having"], a: "having", exp: "Now 表示正在进行，用 Having (正在吃)。" },
-                { q: "Does the dog ______ a bone?", options: ["have", "has", "having"], a: "have", exp: "小心！Does 出现了，要用原形 Have。" },
-                { q: "Last year, I ______ a blue bike.", options: ["have", "has", "had"], a: "had", exp: "Last year 是过去，要用 Had。" },
-                { q: "We are ______ a party right now!", options: ["have", "had", "having"], a: "having", exp: "Right now 表示正在进行，用 Having。" },
-                { q: "She ______ a beautiful dress.", options: ["have", "has", "having"], a: "has", exp: "She 是第三人称单数，用 Has。" }
-            ]
+            `
         }
     };
 
@@ -248,10 +360,11 @@
     let currentLevel = 1;
     let questionQueue = [];
     let currentQIndex = 0;
-    let retryMode = false;
+    
+    // 每次每关抽取的题目数量
+    const QUESTIONS_PER_ROUND = 15;
 
     // 获取DOM元素
-    const app = document.getElementById('app');
     const screens = {
         welcome: document.getElementById('welcome-screen'),
         rule: document.getElementById('rule-screen'),
@@ -264,17 +377,32 @@
         screens[screenId].classList.remove('hidden');
     }
 
+    // 洗牌算法：打乱题目顺序
+    function shuffleArray(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
     function startLevel(level) {
         currentLevel = level;
-        const data = gameData['level' + level];
+        const ruleData = levelRules['level' + level];
+        const allQuestions = allQuestionsData['level' + level];
         
-        document.getElementById('rule-title').innerText = data.title;
-        document.getElementById('rule-content').innerHTML = data.rule;
+        document.getElementById('rule-title').innerText = ruleData.title;
+        document.getElementById('rule-content').innerHTML = ruleData.rule;
         
-        // 初始化题目队列（深拷贝）
-        questionQueue = JSON.parse(JSON.stringify(data.questions));
+        // 核心逻辑：先深拷贝，再洗牌，最后切片取出前 N 道题
+        // 这样每次玩的题目都不一样，但又不会一次做太多
+        let fullList = JSON.parse(JSON.stringify(allQuestions));
+        let shuffledList = shuffleArray(fullList);
+        questionQueue = shuffledList.slice(0, QUESTIONS_PER_ROUND);
+        
         currentQIndex = 0;
-        
         showScreen('rule');
     }
 
@@ -285,7 +413,9 @@
 
     function loadQuestion() {
         const q = questionQueue[currentQIndex];
-        document.getElementById('level-indicator').innerText = `Level ${currentLevel} - Question ${currentQIndex + 1}/${questionQueue.length}`;
+        // 进度显示：剩余题目数
+        const remaining = questionQueue.length - currentQIndex;
+        document.getElementById('level-indicator').innerText = `Level ${currentLevel} - Question ${currentQIndex + 1} / ${questionQueue.length}`;
         document.getElementById('question-text').innerText = q.q;
         
         const container = document.getElementById('options-container');
@@ -318,28 +448,31 @@
             fbBox.style.borderColor = 'var(--success)';
             fbTitle.innerText = "Awesome, Evan! 🌟";
             fbTitle.style.color = 'var(--success)';
-            fbText.innerText = "你答对了！继续加油！";
-            
-            // 如果这题是之前做错的，现在做对了，就不需要再处理了
+            fbText.innerText = "Correct! 你答对了！";
         } else {
             // 回答错误
             fbBox.style.borderColor = 'var(--danger)';
-            fbTitle.innerText = "Oops! Evan, wait a second...";
+            fbTitle.innerText = "Oops! Evan, wait...";
             fbTitle.style.color = 'var(--danger)';
             
-            let explanation = q.exp || "";
-            if (!explanation) {
-                // 如果没有特定解释，生成通用解释
-                if (q.a === 'have') explanation = "记住规则：I/You/We/They 用 Have，或者前面有 Do/Does/Did 也要用 Have！";
-                if (q.a === 'has') explanation = "记住规则：只有 He/She/It 单独一个人时才用 Has 哦。";
-                if (q.a === 'had') explanation = "这是过去发生的事情 (Yesterday/Last year)，所以要用 Had。";
-                if (q.a === 'having') explanation = "正在做某事 (Now)，要用 Having。";
+            let explanation = "";
+            // 通用解释逻辑
+            if (q.q.includes("Yesterday") || q.q.includes("Last") || q.q.includes("ago")) {
+                 explanation = "看到 Yesterday/Last (过去时间) 了吗？过去的事情要用 Had。";
+            } else if (q.q.includes("Do") || q.q.includes("Does") || q.q.includes("Did") || q.q.includes("n't")) {
+                 explanation = "警报！看到 Do/Does/Did/Don't/Doesn't/Didn't 这些照妖镜了吗？必须变回原形 Have！";
+            } else if (q.q.includes("Now") || q.q.includes("now") || q.q.includes("ing")) {
+                 explanation = "现在正在做的事情 (Now)，要用 Having。";
+            } else {
+                 if (q.a === 'have') explanation = "I / You / We / They / 复数，要用 Have。";
+                 if (q.a === 'has') explanation = "He / She / It / 单个人名，要用 Has (三单)。";
+                 if (q.a === 'had') explanation = "过去发生的事情用 Had。";
+                 if (q.a === 'having') explanation = "正在做用 Having。";
             }
             
             fbText.innerHTML = `正确答案是 <strong>${q.a}</strong>。<br><br>${explanation}<br><br>👉 <strong>这道题我们把它放到最后，再考一次哦！</strong>`;
             
             // 错题逻辑：把这道题复制一份加到队列末尾
-            // 标记为重试题，防止死循环统计
             if (!q.isRetry) {
                 let retryQ = JSON.parse(JSON.stringify(q));
                 retryQ.isRetry = true; 
@@ -361,31 +494,28 @@
 
     function finishLevel() {
         showScreen('result');
-        const totalQ = gameData['level' + currentLevel].questions.length;
+        const totalQ = QUESTIONS_PER_ROUND;
         const totalAttempts = questionQueue.length;
-        
-        // 如果 Attempts > totalQ，说明有错题重做的情况
         const isPerfect = totalAttempts === totalQ;
 
         if (isPerfect) {
             document.getElementById('result-emoji').innerText = "🏆";
-            document.getElementById('result-title').innerText = "Perfect! 太棒了！";
-            document.getElementById('result-message').innerText = `Evan, 你在 Level ${currentLevel} 表现完美！你是语法小天才！`;
+            document.getElementById('result-title').innerText = "Perfect! 满分通关！";
+            document.getElementById('result-message').innerText = `Evan, 你在 Level ${currentLevel} 表现完美！`;
             document.getElementById('next-level-btn').classList.remove('hidden');
             document.getElementById('retry-btn').classList.add('hidden');
             
             if (currentLevel === 3) {
                 document.getElementById('next-level-btn').innerText = "全部通关！🎉";
-                document.getElementById('next-level-btn').onclick = () => alert("恭喜Evan完成所有训练！");
+                document.getElementById('next-level-btn').onclick = () => alert("恭喜Evan完成所有训练！你是语法大师了！");
             }
         } else {
             document.getElementById('result-emoji').innerText = "👍";
             document.getElementById('result-title').innerText = "Level Complete!";
-            document.getElementById('result-message').innerText = `Evan, 你完成了 Level ${currentLevel}！虽然中间有几个小陷阱，但你最后都搞懂了，很棒！`;
+            document.getElementById('result-message').innerText = `Evan, 你完成了 Level ${currentLevel}！虽然中间有几个小错误，但你都订正了，很棒！`;
             
-            // 即使有错题重做，只要最后都清空了队列，也算过关，允许进入下一关
             document.getElementById('next-level-btn').classList.remove('hidden');
-            document.getElementById('retry-btn').classList.remove('hidden'); // 可以选择重刷
+            document.getElementById('retry-btn').classList.remove('hidden');
             
             if (currentLevel === 3) {
                 document.getElementById('next-level-btn').innerText = "全部通关！🎉";
