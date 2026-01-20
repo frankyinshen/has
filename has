@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evan's Grammar Adventure</title>
+    <style>
+        :root {
+            --primary: #4A90E2;
+            --success: #66BB6A;
+            --warning: #FFA726;
+            --danger: #EF5350;
+            --bg: #F0F4F8;
+            --card: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Comic Sans MS', 'Chalkboard SE', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            background-color: var(--card);
+            width: 90%;
+            max-width: 600px;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            border: 5px solid var(--primary);
+        }
+
+        h1 { color: var(--primary); margin-bottom: 10px; }
+        h2 { color: #555; font-size: 1.2rem; }
+        
+        .rule-box {
+            background-color: #E3F2FD;
+            border: 2px dashed var(--primary);
+            padding: 20px;
+            border-radius: 15px;
+            margin: 20px 0;
+            text-align: left;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .highlight { color: #D32F2F; font-weight: bold; background: #FFEBEE; padding: 2px 5px; border-radius: 4px; }
+        .magic { color: #7B1FA2; font-weight: bold; }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            margin: 10px;
+            width: 80%;
+            max-width: 300px;
+        }
+
+        .btn:hover { transform: scale(1.05); background-color: #357ABD; }
+        .btn:active { transform: scale(0.95); }
+
+        .options-grid {
+            display: grid;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .option-btn {
+            background-color: white;
+            border: 3px solid #DDD;
+            color: #555;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .option-btn:hover { border-color: var(--primary); background-color: #F5F9FF; }
+
+        .feedback-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        .feedback-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 80%;
+            max-width: 400px;
+            text-align: center;
+            animation: popIn 0.3s;
+            border: 4px solid;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background-color: #EEE;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background-color: var(--success);
+            width: 0%;
+            transition: width 0.5s;
+        }
+
+        .hidden { display: none; }
+        
+        .mascot { font-size: 3rem; margin-bottom: 10px; display: block; }
+    </style>
+</head>
+<body>
+
+<div class="container" id="app">
+    <!-- 欢迎页面 -->
+    <div id="welcome-screen">
+        <span class="mascot">🦁</span>
+        <h1>Hi, Evan! Ready to Play?</h1>
+        <p>我们将通过三个关卡来成为 "Have" 之王！</p>
+        <p>你必须通过第一关，才能解锁下一关哦。</p>
+        <button class="btn" onclick="startLevel(1)">Start Level 1</button>
+    </div>
+
+    <!-- 规则讲解页面 -->
+    <div id="rule-screen" class="hidden">
+        <span class="mascot">📖</span>
+        <h1 id="rule-title">Level Rules</h1>
+        <div class="rule-box" id="rule-content"></div>
+        <button class="btn" onclick="startQuiz()">I Understand! Let's Go!</button>
+    </div>
+
+    <!-- 答题页面 -->
+    <div id="quiz-screen" class="hidden">
+        <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+        <h2 id="level-indicator">Level 1</h2>
+        <div style="font-size: 1.5rem; margin: 30px 0;" id="question-text">
+            Question goes here...
+        </div>
+        <div class="options-grid" id="options-container">
+            <!-- 选项按钮会生成在这里 -->
+        </div>
+    </div>
+
+    <!-- 结果页面 -->
+    <div id="result-screen" class="hidden">
+        <span class="mascot" id="result-emoji">🏆</span>
+        <h1 id="result-title">Level Complete!</h1>
+        <p id="result-message">Good job, Evan!</p>
+        <button class="btn" id="next-level-btn" onclick="nextStage()">Next Level ➡️</button>
+        <button class="btn" id="retry-btn" onclick="retryLevel()">Try Again 🔄</button>
+    </div>
+</div>
+
+<!-- 反馈弹窗 -->
+<div class="feedback-modal" id="feedback-modal">
+    <div class="feedback-content" id="feedback-box">
+        <h2 id="fb-title"></h2>
+        <p id="fb-text" style="font-size: 1.1rem; margin: 20px 0;"></p>
+        <button class="btn" onclick="closeFeedback()">OK</button>
+    </div>
+</div>
+
+<script>
+    // 题目数据库
+    const gameData = {
+        level1: {
+            title: "Level 1: 现在的我和他，还有过去",
+            rule: `
+                <strong>1. 现在的 "Have" vs "Has"</strong><br>
+                👉 <strong>Have:</strong> 我(I)、你(You)、大家(We/They/Cats)。<br>
+                👉 <strong>Has:</strong> 他(He)、她(She)、它(It)、汤姆(Tom)。<br>
+                <em>口诀：Has 有个 "s"，送给孤单的 "Single" (单个人)。</em><br><br>
+                <strong>2. 过去的 "Had"</strong><br>
+                👉 只要是过去的事情 (Yesterday, Last year)，大家都用 <strong>Had</strong>！
+            `,
+            questions: [
+                { q: "I ______ a red bicycle.", options: ["have", "has", "had"], a: "have", type: "rule1" },
+                { q: "She ______ a cute puppy.", options: ["have", "has", "had"], a: "has", type: "rule1" },
+                { q: "Tom and Jerry ______ a big house.", options: ["have", "has", "had"], a: "have", type: "rule1" },
+                { q: "Yesterday, we ______ pizza for lunch.", options: ["have", "has", "had"], a: "had", type: "rule2" },
+                { q: "My cat ______ a long tail.", options: ["have", "has", "had"], a: "has", type: "rule1" }
+            ]
+        },
+        level2: {
+            title: "Level 2: 魔法照妖镜 (Do/Does/Did)",
+            rule: `
+                <strong>⚠️ 最容易错的地方！</strong><br><br>
+                当句子里出现了小帮手：<br>
+                <span class="highlight">Do / Does / Did</span><br>
+                <span class="highlight">Don't / Doesn't / Didn't</span><br><br>
+                后面的动词必须被打回原形 👉 <strong>HAVE</strong>。<br>
+                <em>不管前面是 He 还是 She，也不管是不是昨天！</em>
+            `,
+            questions: [
+                { q: "He doesn't ______ a car.", options: ["have", "has", "had"], a: "have", exp: "看到 doesn't 了吗？Has 必须变回原形 Have！" },
+                { q: "Did you ______ fun at the park?", options: ["have", "has", "had"], a: "have", exp: "Did 出现了！Had 必须变回原形 Have！" },
+                { q: "Does she ______ a brother?", options: ["have", "has", "had"], a: "have", exp: "Does 是照妖镜，She 后面的 Has 要变回 Have！" },
+                { q: "I didn't ______ breakfast this morning.", options: ["have", "has", "had"], a: "have", exp: "Didn't 出现了，必须用原形 Have。" },
+                { q: "Do they ______ a computer?", options: ["have", "has", "had"], a: "have", exp: "Do 后面跟原形 Have。" }
+            ]
+        },
+        level3: {
+            title: "Level 3: 正在进行 & 终极大挑战",
+            rule: `
+                <strong>1. 正在做 (Having)</strong><br>
+                如果是 "正在吃" 或 "正在玩"，用 <span class="magic">Having</span>。<br>
+                <em>注意：Have 去掉 e 再加 ing！</em><br><br>
+                <strong>2. 混合大挑战</strong><br>
+                这一关包含了之前学过的所有陷阱哦！小心 Do/Does/Did！
+            `,
+            questions: [
+                { q: "Look! They are ______ lunch now.", options: ["have", "has", "having"], a: "having", exp: "Now 表示正在进行，用 Having (正在吃)。" },
+                { q: "Does the dog ______ a bone?", options: ["have", "has", "having"], a: "have", exp: "小心！Does 出现了，要用原形 Have。" },
+                { q: "Last year, I ______ a blue bike.", options: ["have", "has", "had"], a: "had", exp: "Last year 是过去，要用 Had。" },
+                { q: "We are ______ a party right now!", options: ["have", "had", "having"], a: "having", exp: "Right now 表示正在进行，用 Having。" },
+                { q: "She ______ a beautiful dress.", options: ["have", "has", "having"], a: "has", exp: "She 是第三人称单数，用 Has。" }
+            ]
+        }
+    };
+
+    // 游戏状态
+    let currentLevel = 1;
+    let questionQueue = [];
+    let currentQIndex = 0;
+    let retryMode = false;
+
+    // 获取DOM元素
+    const app = document.getElementById('app');
+    const screens = {
+        welcome: document.getElementById('welcome-screen'),
+        rule: document.getElementById('rule-screen'),
+        quiz: document.getElementById('quiz-screen'),
+        result: document.getElementById('result-screen')
+    };
+
+    function showScreen(screenId) {
+        Object.values(screens).forEach(s => s.classList.add('hidden'));
+        screens[screenId].classList.remove('hidden');
+    }
+
+    function startLevel(level) {
+        currentLevel = level;
+        const data = gameData['level' + level];
+        
+        document.getElementById('rule-title').innerText = data.title;
+        document.getElementById('rule-content').innerHTML = data.rule;
+        
+        // 初始化题目队列（深拷贝）
+        questionQueue = JSON.parse(JSON.stringify(data.questions));
+        currentQIndex = 0;
+        
+        showScreen('rule');
+    }
+
+    function startQuiz() {
+        showScreen('quiz');
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const q = questionQueue[currentQIndex];
+        document.getElementById('level-indicator').innerText = `Level ${currentLevel} - Question ${currentQIndex + 1}/${questionQueue.length}`;
+        document.getElementById('question-text').innerText = q.q;
+        
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+        
+        q.options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt);
+            container.appendChild(btn);
+        });
+
+        // 更新进度条
+        const percent = (currentQIndex / questionQueue.length) * 100;
+        document.querySelector('.progress-fill').style.width = percent + '%';
+    }
+
+    function checkAnswer(selected) {
+        const q = questionQueue[currentQIndex];
+        const feedbackModal = document.getElementById('feedback-modal');
+        const fbBox = document.getElementById('feedback-box');
+        const fbTitle = document.getElementById('fb-title');
+        const fbText = document.getElementById('fb-text');
+
+        feedbackModal.style.display = 'flex';
+
+        if (selected === q.a) {
+            // 回答正确
+            fbBox.style.borderColor = 'var(--success)';
+            fbTitle.innerText = "Awesome, Evan! 🌟";
+            fbTitle.style.color = 'var(--success)';
+            fbText.innerText = "你答对了！继续加油！";
+            
+            // 如果这题是之前做错的，现在做对了，就不需要再处理了
+        } else {
+            // 回答错误
+            fbBox.style.borderColor = 'var(--danger)';
+            fbTitle.innerText = "Oops! Evan, wait a second...";
+            fbTitle.style.color = 'var(--danger)';
+            
+            let explanation = q.exp || "";
+            if (!explanation) {
+                // 如果没有特定解释，生成通用解释
+                if (q.a === 'have') explanation = "记住规则：I/You/We/They 用 Have，或者前面有 Do/Does/Did 也要用 Have！";
+                if (q.a === 'has') explanation = "记住规则：只有 He/She/It 单独一个人时才用 Has 哦。";
+                if (q.a === 'had') explanation = "这是过去发生的事情 (Yesterday/Last year)，所以要用 Had。";
+                if (q.a === 'having') explanation = "正在做某事 (Now)，要用 Having。";
+            }
+            
+            fbText.innerHTML = `正确答案是 <strong>${q.a}</strong>。<br><br>${explanation}<br><br>👉 <strong>这道题我们把它放到最后，再考一次哦！</strong>`;
+            
+            // 错题逻辑：把这道题复制一份加到队列末尾
+            // 标记为重试题，防止死循环统计
+            if (!q.isRetry) {
+                let retryQ = JSON.parse(JSON.stringify(q));
+                retryQ.isRetry = true; 
+                questionQueue.push(retryQ);
+            }
+        }
+    }
+
+    function closeFeedback() {
+        document.getElementById('feedback-modal').style.display = 'none';
+        currentQIndex++;
+        
+        if (currentQIndex < questionQueue.length) {
+            loadQuestion();
+        } else {
+            finishLevel();
+        }
+    }
+
+    function finishLevel() {
+        showScreen('result');
+        const totalQ = gameData['level' + currentLevel].questions.length;
+        const totalAttempts = questionQueue.length;
+        
+        // 如果 Attempts > totalQ，说明有错题重做的情况
+        const isPerfect = totalAttempts === totalQ;
+
+        if (isPerfect) {
+            document.getElementById('result-emoji').innerText = "🏆";
+            document.getElementById('result-title').innerText = "Perfect! 太棒了！";
+            document.getElementById('result-message').innerText = `Evan, 你在 Level ${currentLevel} 表现完美！你是语法小天才！`;
+            document.getElementById('next-level-btn').classList.remove('hidden');
+            document.getElementById('retry-btn').classList.add('hidden');
+            
+            if (currentLevel === 3) {
+                document.getElementById('next-level-btn').innerText = "全部通关！🎉";
+                document.getElementById('next-level-btn').onclick = () => alert("恭喜Evan完成所有训练！");
+            }
+        } else {
+            document.getElementById('result-emoji').innerText = "👍";
+            document.getElementById('result-title').innerText = "Level Complete!";
+            document.getElementById('result-message').innerText = `Evan, 你完成了 Level ${currentLevel}！虽然中间有几个小陷阱，但你最后都搞懂了，很棒！`;
+            
+            // 即使有错题重做，只要最后都清空了队列，也算过关，允许进入下一关
+            document.getElementById('next-level-btn').classList.remove('hidden');
+            document.getElementById('retry-btn').classList.remove('hidden'); // 可以选择重刷
+            
+            if (currentLevel === 3) {
+                document.getElementById('next-level-btn').innerText = "全部通关！🎉";
+                document.getElementById('next-level-btn').onclick = () => alert("恭喜Evan完成所有训练！");
+            }
+        }
+    }
+
+    function nextStage() {
+        if (currentLevel < 3) {
+            startLevel(currentLevel + 1);
+        } else {
+            alert("你已经通关了！去吃个冰淇淋庆祝一下吧！🍦");
+        }
+    }
+
+    function retryLevel() {
+        startLevel(currentLevel);
+    }
+
+</script>
+
+</body>
+</html>
